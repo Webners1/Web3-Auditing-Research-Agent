@@ -1,0 +1,12 @@
+{
+  "name": "web3-auditing-agent",
+  "version": "1.0.0",
+  "description": "Founder-grade Web3 protocol diligence agent for Claude Code",
+  "scripts": {
+    "postinstall": "node scripts/install-skills.js",
+    "setup": "node scripts/install-skills.js",
+    "install-skills": "node scripts/install-skills.js"
+  },
+  "keywords": ["web3", "audit", "smart-contracts", "claude-code", "defi", "security"],
+  "license": "MIT"
+}

@@ -138,7 +138,11 @@ Spawn all 8 agents in a **single parallel batch** — do not wait for one before
 
 **This phase is not optional.** A report with only security findings is incomplete. Founders and protocol teams need the full picture to act on the report.
 
-After completing the security findings, produce these four sections for the report:
+**Specificity requirement:** Apply the Three-Pillar Framework and Specificity Standards from `CLAUDE.md` throughout this entire phase. The test: if a sentence or recommendation could appear unchanged in an audit of a completely different protocol, it must be rewritten with protocol-specific evidence and a named comparison. Generic outputs fail this phase.
+
+For the Pillar 2 trust signal dimensions (docs, GitHub, audit standing), use Phase 2.4 evidence from `product-assessor` if that skill was run. If not, collect the observable signals directly: last GitHub commit date, docs freshness vs most recent deployment, audit currency, and recent shipping history.
+
+After completing the security findings, produce these sections for the report:
 
 #### 5a. Protocol Health Assessment
 
@@ -214,7 +218,7 @@ For each weak area, include one concrete upgrade recommendation and expected imp
 
 1. **Format** all sections per `references/report-format.md` (includes sections 6–13)
 2. **Write** report to `audit-output/[project-name]-audit-[YYYYMMDD].md`
-3. **Include** 30/60/90 Day Execution Plan as the closing section
+3. **Produce** effort-tiered Remediation Sequence (Easy / Medium / Hard) as the closing section — never calendar tiers
 4. **Print** findings summary table to terminal
 5. **Handoff** to `skills/remediation-architect/SKILL.md` if detailed fix planning is needed
 6. **Handoff** to `skills/client-reporting/SKILL.md` for HTML/PDF export

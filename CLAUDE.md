@@ -278,6 +278,12 @@ Before ending any substantial protocol engagement:
 ### `/product-assessor` - Product Review and Contract Discovery
 **File:** `skills/product-assessor/SKILL.md`
 **Use when:** the user wants the product itself assessed, especially non-smart-contract risk and trust assumptions
+**Calls:** `skills/ux-audit/SKILL.md` automatically as Phase 1.5
+
+### `/ux-audit` - Web3 UX Audit
+**File:** `skills/ux-audit/SKILL.md`
+**Use when:** the user wants the UX, design quality, wallet experience, trust signals, and competitive design position assessed
+**Feeds into:** Pillar 2 (Product Trust) — UX quality is a trust and conversion signal, not cosmetic polish
 
 ### `/web3-audit` - Full Security Audit
 **File:** `skills/web3-audit/SKILL.md`
@@ -376,12 +382,85 @@ The industry gap analysis must be based on **real research**, not a list of pre-
 3. **Industry gap analysis** — what Aave, Compound, Curve, Uniswap, Morpho, EigenLayer, and other leaders are doing that this protocol is not, and what those gaps cost them in adoption, trust, or TVL
 4. **Feature opportunities** — specific things the protocol should build or integrate (veToken, ERC-4626, Chainlink, L2, autocompound, bug bounty, etc.) with named protocol examples
 5. **Business observations** — what the market has shifted toward since this protocol launched, what the protocol's real value proposition is (not the marketing version), and what the single biggest non-code risk is right now
-6. **Execution roadmap** — a concrete 30/60/90 day plan with specific sequenced actions, not aspirational bullet points
+6. **Execution roadmap** — an effort-tiered remediation sequence (Easy / Medium / Hard) with specific validated actions — no calendar estimates, no aspirational bullets
 7. **App flow and UX maturity** — whether real users can complete core tasks quickly, confidently, and recover from failures
 8. **Smart wallet readiness (conditional)** — whether account-abstraction claims are implemented safely and operationally when applicable
 9. **2026 market-readiness scorecard** — whether the protocol is execution-ready across UI/UX, security, contracts, docs/GitHub/presentation, product clarity, business fit, and stack competitiveness
 
 Every report must cover all nine areas. The technical and business halves are equally important.
+
+## Three-Pillar Assessment Framework
+
+Every engagement must assess all three pillars. These are not sections — they are lenses applied throughout the entire report. Generic outputs that could apply to any protocol without modification fail this framework.
+
+### Pillar 1 — Smart Contract Security
+**What it measures:** Provable vulnerabilities in deployed or reviewed source code.
+**Evidence standard:** Exact `File.sol:line`, vulnerable code block, numbered exploit sequence, 4-gate validation, industry-standard fix, fix rationale with one considered alternative.
+**Output format:** FINDING (passes all 4 gates) or LEAD (incomplete proof) — never vague security commentary.
+
+### Pillar 2 — Product Trust & Professional Standing
+**What it measures:** Observable signals that external parties — capital allocators, integrators, protocol reviewers, users — use to evaluate whether a protocol is trustworthy and worth engaging with. This covers both operational maturity signals AND the direct UX and design quality of the product, because how a product looks and feels is itself a trust signal.
+
+**Required evidence collection:**
+
+*Operational maturity (use `skills/product-assessor/SKILL.md` Phase 2.4):*
+- GitHub activity: last commit date, commit count in last 30/90/180 days, open issue count, oldest unresolved issue age, contributor count
+- Documentation freshness: last update date vs most recent contract deployment date, whether all deployed contracts are documented, whether an integration guide exists
+- Audit standing: firms, dates, exact contract versions covered, whether currently deployed code is within audit scope
+- Shipping history: major updates or deployments in last 6 months — what shipped, when, what impact was claimed
+- Team and entity transparency: known contributors, entity operating the protocol, official channels
+- Community signals: governance participation rate (if applicable), incident communication history
+
+*UX and design quality (use `skills/ux-audit/SKILL.md`):*
+- Visual design: does the design communicate professionalism, or does it look like an untouched template?
+- Value clarity: can a first-time visitor understand what the protocol does within 10 seconds?
+- Wallet connection flow: how many steps, what error states, what wallet coverage?
+- Core transaction UX: is risk shown before signing, are errors decoded, are states handled?
+- Trust signals in UI: are contract addresses, audit links, and risk disclosures visible in the app?
+- Mobile and cross-browser: does it work on MetaMask Mobile and WalletConnect?
+- Competitive UX position: where does this protocol sit vs function-matched peers?
+
+**Output standard:** State the observable fact first. "Docs last updated 8 months before the v2 deployment" is the finding. "Update your docs" is not a finding — it is the recommendation that follows. Same rule applies to UX: "The wallet connection flow requires 4 manual steps with no network auto-detection — users on the wrong network see a silent failure with no guidance" is a finding. "Improve your wallet UX" is not.
+
+### Pillar 3 — Market Position & Strategic Path
+**What it measures:** Where this protocol sits relative to its category right now and what specific actions close the highest-value gaps. Every recommendation must be specific enough to be acted on immediately.
+
+**Evidence standard for every strategic claim:**
+1. A live data point from DefiLlama, L2BEAT, or Token Terminal — not training-data memory, not "the industry"
+2. A named protocol doing the specific thing better — not "other protocols" or "industry leaders"
+3. A concrete action — not "consider X" but "implement Y at Z using pattern W, reference: [specific protocol]"
+
+**Output standard:** If a recommendation could appear unchanged in an audit of any DeFi protocol, it must be rewritten with protocol-specific evidence and a named comparison.
+
+---
+
+## Specificity Standards
+
+The test for any output: could this same sentence appear unchanged in an audit of a completely different protocol? If yes, it is generic and must be rewritten before delivery.
+
+### Banned Output Patterns
+
+| Generic Pattern (never write this) | Required Replacement |
+|-------------------------------------|---------------------|
+| "Consider improving your documentation" | State the last update date vs most recent deployment date, name what coverage is missing, cite the specific adoption cost ("DefiLlama shows 'unverified' without current docs") |
+| "You should go multi-chain" | Name the specific chain, the market thesis grounded in live data, and which protocols in the same category are growing there and why |
+| "Improve your tokenomics" | Identify the specific failure (emission ended, reflexive incentive, no fee-to-token path), name the mechanism fix, cite a protocol that deployed it and what changed |
+| "The industry uses X" | Name the exact protocol, what they specifically built, when they shipped it, and what it cost other protocols not to do it |
+| "Consider launching a governance token" | Specify the utility mechanism, distribution model, and a named protocol where this drove measurable TVL retention |
+| "Commission a bug bounty" | Name the type of engagement needed (full source audit + fuzzing, formal verification), name firms that specialize in this category, and explicitly state what this report covers and does not cover |
+| "Consider X for better Y" | "Implement X at [location] using [specific pattern] — reference: [Protocol] deployed this via [mechanism] — closes [specific gap] that currently prevents [specific consequence]" |
+| Any trend claim without data | Attach a DefiLlama/L2BEAT/Token Terminal citation — if none exists, label the claim explicitly as hypothesis, not trend |
+
+### Required Structure for Every Recommendation
+
+Every substantive recommendation must follow this structure — without exception:
+
+1. **Current observable state** — what is measurable right now, with specific evidence (date, number, URL, or direct quote)
+2. **Named comparison** — which specific protocol does this better, and what exactly they built or shipped
+3. **Gap consequence** — what this specific gap prevents or costs (integration blocked, TVL cap, institutional barrier, user retention failure)
+4. **Specific action** — not "improve X" but "implement Y at Z because W — reference implementation: [Protocol that did it]"
+
+---
 
 ## Core Principles
 

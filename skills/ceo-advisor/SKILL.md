@@ -99,3 +99,5 @@ If the user wants a client-shareable deliverable, hand off to `skills/client-rep
 - Treat user-journey friction and wallet UX constraints as business risks, not design afterthoughts
 - Do not lock recommendations to a fixed protocol list; pick the best benchmark per capability
 - A strategy recommendation is incomplete without a concrete execution path and measurable readiness impact
+- Apply the Specificity Standards from `CLAUDE.md` to every recommendation — if the same sentence could appear unchanged in an audit of a different protocol, rewrite it with protocol-specific evidence
+- For every strategic recommendation: state the observable current state (with evidence), name the specific protocol doing it better, identify the specific gap consequence, then give the specific implementable action

@@ -258,21 +258,25 @@ Projection requirements (mandatory):
 
 ### 11. 2026 Market-Readiness Assessment
 
-This section synthesizes technical and operating readiness for the next market cycle.
+This section synthesizes technical and operating readiness for the next market cycle. Every row requires observable evidence — not opinions.
+
+**UX row requirement:** If `skills/ux-audit/SKILL.md` was run (it should have been as part of product-assessor Phase 1.5), use the UX Posture score and the top 2 HIGH/CRITICAL UX findings as the evidence. UX quality is a trust signal and a conversion driver — it belongs in this table with the same rigor as security.
 
 ```markdown
-| Dimension | Status | Evidence | Gap Cost | Priority Upgrade |
-|-----------|--------|----------|----------|------------------|
-| UI/UX and failure-path quality | Strong / Mixed / Weak | | | |
-| Security and incident resilience | Strong / Mixed / Weak | | | |
-| Smart contract quality maturity | Strong / Mixed / Weak | | | |
-| Docs/GitHub/presentation quality | Strong / Mixed / Weak | | | |
-| Product clarity and differentiation | Strong / Mixed / Weak | | | |
-| Business durability (12-month view) | Strong / Mixed / Weak | | | |
-| Stack competitiveness | Strong / Mixed / Weak | | | |
+| Dimension | Status | Evidence (observable facts) | Gap Cost | Priority Upgrade |
+|-----------|--------|------------------------------|----------|------------------|
+| UI/UX quality and user-flow reliability | Strong / Mixed / Weak | [UX Posture from ux-audit + key finding] | | |
+| Security and incident resilience | Strong / Mixed / Weak | [audit history, audit currency, bug bounty status] | | |
+| Smart contract quality maturity | Strong / Mixed / Weak | [test coverage visible in repo, framework, audit scope] | | |
+| Docs/GitHub/presentation quality | Strong / Mixed / Weak | [last commit date, docs freshness vs deployment] | | |
+| Product clarity and differentiation | Strong / Mixed / Weak | [first-impression finding from ux-audit, DefiLlama category rank] | | |
+| Business durability (12-month view) | Strong / Mixed / Weak | [TVL trend, token emission status, revenue model status] | | |
+| Stack competitiveness | Strong / Mixed / Weak | [named peer comparison from category with specific metric] | | |
 ```
 
-For each weak area, include one implementation-ready recommendation with sequencing notes.
+For each Weak or Mixed dimension: one implementation-ready recommendation with a named reference protocol and sequencing note.
+
+**UX → Trust connection:** For the UI/UX row, always connect UX quality to trust and adoption consequences, not only to "user satisfaction." A Weak UX rating with no trust signal explanation is incomplete.
 
 ---
 

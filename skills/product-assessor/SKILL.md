@@ -41,7 +41,7 @@ Map:
 6. Revenue path: fees, spread, token utility, subscription, hidden centralization
 7. Readiness evidence pack: docs quality, GitHub hygiene, incident transparency, and product narrative clarity
 
-If `ux-audit` is available, run a focused walkthrough on one primary user flow and one failure path. If not available, perform the same review manually with the checklist.
+Run `skills/ux-audit/SKILL.md` as Phase 1.5 immediately after surface mapping. This is mandatory — complete the full UX audit before proceeding to Phase 2. The UX audit outputs (UX Posture score, summary table, all HIGH/CRITICAL findings) feed directly into Phase 2's UX row and Phase 2.4's trust signal register. Do not defer or skip UX review.
 
 Load `references/product-review-checklist.md` before scoring risk.
 
@@ -72,6 +72,61 @@ For each issue, classify:
 - `UX-FRICTION`
 - `AA-READINESS GAP`
 - `MARKET-READINESS GAP`
+
+### Phase 2.4 - Observable Trust Signal Audit
+
+Collect the factual evidence that external parties — capital allocators, integrators, protocol reviewers, and serious users — actually check before engaging. Record facts first. Do not write generic assessments. "Docs last updated 8 months before v2 deployment" is a finding. "Update your docs" is not.
+
+**GitHub Activity**
+Check the main repository branch:
+- Last commit date and how many days ago that is
+- Commit count: last 30 days / last 90 days / last 180 days
+- Open issues: total count, date of oldest unresolved issue
+- PR activity: merges in last 90 days
+- Contributor count: unique authors in last 6 months
+- README and test coverage: last updated, visible test depth
+
+**Documentation**
+- Last update date or version stamp on docs site or README
+- Coverage: are all deployed contracts documented? Are verified contract addresses listed for every network?
+- Integration guide: does one exist for builders who want to compose with this protocol?
+- Changelog or release notes: public history of changes?
+- Incident disclosure: any past incidents documented publicly with post-mortems?
+
+**Audit Standing**
+- Published audit reports: list each — firm name, date, contract version covered
+- Currency check: is the currently deployed code within the scope of the most recent audit, or has the code changed since?
+- Bug bounty: active program on Immunefi or equivalent, maximum payout tier
+
+**Recent Shipping History**
+- Major protocol upgrades or new contract deployments in the last 6 months: what shipped, when, claimed impact
+- Publicly announced integrations or partnerships in the last 6 months
+- Testnet activity
+
+**Team and Entity Signals**
+- Doxxed contributors or known pseudonymous identities with established track records
+- Legal entity or DAO operating the protocol
+- Official communication channels and their last update
+
+**Community Signals**
+- Governance participation rate if on-chain governance exists (voter turnout, proposal count)
+- Discord or Telegram: active, slow, or abandoned
+- Social media: update frequency and recent communications
+
+**Output format (required):**
+Record as observations, not assessments:
+- "Last GitHub commit: [date] — [N] days before this review"
+- "Docs last updated: [date] — [N] months before/after most recent contract deployment"
+- "Audit: [Firm] reviewed [version] on [date] — deployed code [is/is not] within that audit scope"
+- "Open issues: [N] total — oldest unresolved: [age]"
+- "Shipping history: [what shipped in last 6 months, or 'no major releases in this period']"
+
+Then for each weak or missing signal, add one specific named comparison:
+- Name a protocol in the same category with demonstrably better standing on this dimension
+- State specifically what they do (not "they have better docs" — "Morpho Blue ships a docs PR within 24 hours of every contract deployment and attributes first integration partner onboarding to this practice")
+- State the specific consequence for this protocol ("without current docs covering the v2 deployment, aggregator onboarding requires manual contract discovery, which most integrators skip")
+
+---
 
 ### Phase 2.5 - Smart Wallet / Account Abstraction Checkpoint (Conditional)
 

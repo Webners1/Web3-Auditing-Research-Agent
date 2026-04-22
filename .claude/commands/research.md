@@ -1,144 +1,62 @@
 Load `skills/protocol-memory/SKILL.md`.
 Load `skills/protocol-diligence/references/research-source-registry.md`.
 
-This is the primary command for researching an EXTERNAL protocol — one you do not own but want to audit, analyze, or pitch improvements to. It runs discovery, security analysis, architecture review, and opportunity mapping in a single flow.
+Research an external protocol — runs discovery, security analysis, architecture review, and opportunity mapping.
 
-**Argument:** $ARGUMENTS — a URL, protocol name, or either followed by a focus keyword.
-
-Example inputs:
-- `https://fuji.finance/`
-- `https://mars.poolin.fi/`
-- `Uniswap v4`
-- `https://app.aave.com/ bugs`
-- `Morpho Blue improvements`
-- `https://compound.finance/ both`
+**Argument:** $ARGUMENTS — a URL, protocol name, or either followed by a focus keyword (`bugs` / `improvements` / `both`).
 
 ---
 
-## Step 1 — Resolve Input to Protocol Identity
+## Step 1 — Resolve Protocol Identity
 
-**If $ARGUMENTS is a URL (starts with `http`):**
-1. Extract the domain — e.g., `mars.poolin.fi` → slug `mars-poolin`, `fuji.finance` → slug `fuji-finance`
-2. Fetch the URL: `WebFetch(url, "Extract: protocol name, what it does, GitHub links, docs links, contract addresses, token names, chain")`
-3. If the page is JS-rendered and returns no content, fall back to web search: `"[domain] protocol DeFi smart contract GitHub"`
-4. Derive the protocol name and continue
+**If URL:** fetch it → extract protocol name, GitHub, docs, contract addresses, chain. If JS-rendered with no content, fall back to web search: `"[domain] protocol DeFi smart contract GitHub"`. Derive slug from domain (e.g. `mars.poolin.fi` → `mars-poolin`).
 
-**If $ARGUMENTS is a name:** use directly. Normalize to slug.
+**If name:** use directly, normalize to slug.
 
-Check `memory/protocols/[slug]/` for any prior context. Load it if it exists. Create it if not.
+Check `memory/protocols/[slug]/` for prior context. Load it if it exists; create it if not.
 
 ---
 
 ## Step 2 — External Discovery
 
-Use the source registry research order. For this protocol, find:
+Find:
+1. **Official sources** — website, docs, GitHub org, deployment/addresses page, prior public audits, bug bounty page, smart-wallet/AA claims
+2. **On-chain footprint** — verify deployed contracts, proxy/implementation via Etherscan or Blockscout, chains deployed on
+3. **Market context** — TVL and category from DefiLlama; chain breakdown; direct competitors
 
-1. **Official sources**
-   - Protocol website and docs
-   - GitHub org and main repository
-   - Deployment / addresses page
-   - Prior public audits (search docs site + GitHub)
-   - Bug bounty page
-   - Wallet UX / smart-wallet claims and any account-abstraction disclosures
-
-2. **On-chain footprint**
-   - Verify deployed contract addresses
-   - Check proxy / implementation via Etherscan or Blockscout
-   - Note chains deployed on
-
-3. **Market context** (from DefiLlama, L2BEAT)
-   - TVL and category
-   - Chain breakdown
-   - Direct competitors
-
-Record all source URLs. Every claim in the output must trace back to a source.
+Record all source URLs. Every claim must trace back to a source.
 
 ---
 
 ## Step 3 — Contract Acquisition
 
-**Priority order — try each until source code is obtained:**
+Try each in order until source code is obtained:
 
-1. **GitHub clone (best):** if a repo URL was found:
-```bash
-git clone [repo-url] /tmp/[slug]-contracts 2>&1 | tail -5
-find /tmp/[slug]-contracts -name "*.sol" -not -path "*/node_modules/*" -not -path "*/lib/*" -not -path "*/test*" | sort
-```
+1. **GitHub clone:** `git clone [repo-url] /tmp/[slug]-contracts` → enumerate `.sol` files
+2. **Etherscan API:** `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=[ADDRESS]`
+3. **Etherscan UI:** `https://etherscan.io/address/[ADDRESS]#code`
+4. **Blockscout (L2):** `https://[chain].blockscout.com/address/[ADDRESS]/contracts`
 
-2. **Etherscan source API:** for each contract address found:
-```
-WebFetch: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=[ADDRESS]&apikey=YourApiKeyToken
-```
-Parse the `SourceCode` and `ContractName` fields from the JSON response.
-
-3. **Etherscan UI fallback:**
-```
-WebFetch: https://etherscan.io/address/[ADDRESS]#code
-```
-Extract visible source code from the `#code` tab.
-
-4. **Blockscout fallback** (for L2 chains — Arbitrum, Optimism, Base):
-```
-WebFetch: https://[chain].blockscout.com/address/[ADDRESS]/contracts
-```
-
-**Note if the site was JS-rendered and returned no content:**
-Fall back immediately to web search: `"[domain] protocol GitHub smart contract"` — do not halt on a blank page fetch.
+If any page is JS-rendered and returns no content, fall back to web search immediately — do not halt.
 
 ---
 
 ## Step 4 — Route by Focus
 
-**Always first** → Run `skills/product-assessor/SKILL.md` to map trust boundaries and product risk.
-Include:
-- one primary workflow pass
-- one failure-path workflow pass
-- smart-wallet/account-abstraction readiness checks when claimed
+**Always first** → Run `skills/product-assessor/SKILL.md`: one primary workflow pass, one failure-path pass, AA readiness when claimed.
 
-**Focus: `bugs` or `both`** → Run `skills/web3-audit/SKILL.md` on the discovered contracts.
-The audit must use proof discipline. Do not flag speculative issues.
+**Focus `bugs` or `both`** → Run `skills/web3-audit/SKILL.md`. Proof discipline — no speculative findings.
 
-**Focus: `improvements` or `both`** → Run `skills/arch-advisor/SKILL.md` on the discovered architecture.
-Benchmark against the source registry. Identify upgrade paths, integration gaps, scaling limitations.
+**Focus `improvements` or `both`** → Run `skills/arch-advisor/SKILL.md`. Benchmark against the source registry; identify upgrade paths, integration gaps, scaling limitations.
 
-**Always** → Run `skills/ceo-advisor/SKILL.md` to identify:
-- What market opportunities exist for this protocol category right now
-- What the protocol is not doing that competitors or complementary protocols are
-- What a well-positioned team would build next
+**Always** → Run `skills/ceo-advisor/SKILL.md`: market opportunities in this category, what competitors are doing, what the team should build next.
 
 ---
 
 ## Step 5 — Save and Output
 
-Update `memory/protocols/[slug]/`:
-- `profile.md` — what the protocol is, its footprint, key contracts
-- `findings.md` — security findings and leads
-- `working-memory.md` — architecture gaps and improvement opportunities
-- `next-actions.md` — recommended engagement next steps
+Update `memory/protocols/[slug]/`: `profile.md` · `findings.md` · `working-memory.md` · `next-actions.md`
 
-Write outputs to `audit-output/`:
-- `[slug]-product-[YYYYMMDD].md` from product assessor
-- `[slug]-audit-[YYYYMMDD].md` if bugs were analyzed
-- `[slug]-arch-[YYYYMMDD].md` if architecture was reviewed
-- `[slug]-strategy-[YYYYMMDD].md` if market strategy was analyzed
+Write to `audit-output/`: `[slug]-product-[YYYYMMDD].md` · `[slug]-audit-[YYYYMMDD].md` (if bugs) · `[slug]-arch-[YYYYMMDD].md` (if improvements) · `[slug]-strategy-[YYYYMMDD].md`
 
-Print a summary:
-- Protocol overview (2 sentences)
-- Top 3 security findings or leads
-- Top 3 architecture improvement opportunities
-- Top 2 strategic recommendations
-- Suggested next command
-
----
-
-## Usage Examples
-
-```
-/research https://fuji.finance/
-/research https://mars.poolin.fi/
-/research https://app.aave.com/ bugs
-/research https://compound.finance/ both
-/research Uniswap v4
-/research Morpho Blue improvements
-/research EigenLayer both
-```
+Print summary: protocol overview (2 sentences) · top 3 security findings or leads · top 3 architecture opportunities · top 2 strategic recommendations · suggested next command.

@@ -1,0 +1,29 @@
+{
+  "name": "web3-sales-agent",
+  "version": "1.0.0",
+  "description": "Stage-3 Web3 sales agent for the three-agent lead -> research -> pitch pipeline",
+  "type": "module",
+  "scripts": {
+    "scan": "node scripts/scan.mjs",
+    "scan:defillama": "node scripts/scan.mjs --source defillama",
+    "merge": "node scripts/merge-tracker.mjs",
+    "verify": "node scripts/verify-pipeline.mjs",
+    "doctor": "node scripts/verify-pipeline.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "web3",
+    "sales",
+    "client-acquisition",
+    "smart-contract-audit",
+    "lead-generation",
+    "ai-agent"
+  ],
+  "license": "MIT",
+  "credits": {
+    "original": "career-ops by santifer - https://github.com/santifer/career-ops",
+    "adapted": "web3-sales-agent - Stage-3 Web3 sales workflow"
+  }
+}

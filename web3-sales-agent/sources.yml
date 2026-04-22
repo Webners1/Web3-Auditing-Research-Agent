@@ -1,0 +1,176 @@
+# web3-sales-agent — Lead Discovery Sources
+# This file configures WHERE and HOW the agent discovers new protocol leads.
+# Adapt this to your target chains and service focus.
+
+# ──────────────────────────────────────────────
+# DEFI LLAMA — PRIMARY DISCOVERY SOURCE
+# Free API, no key required
+# ──────────────────────────────────────────────
+defillama:
+  enabled: true
+  # API endpoint (no key needed)
+  api_base: "https://api.llama.fi"
+  # Scan these chains for protocols in the TVL sweet spot
+  target_chains:
+    - Base
+    - Arbitrum
+    - Ethereum
+    - Berachain
+    - Mantle
+  # TVL sweet spot (read from config/profile.yml by default, override here)
+  tvl_min: 50000
+  tvl_max: 200000
+  # Also check each protocol's treasury
+  check_treasury: true
+  treasury_min: 100000
+  # Category filter — which DeFi categories to include
+  include_categories:
+    - Dexes
+    - Lending
+    - Yield
+    - CDP
+    - Options
+    - Derivatives
+    - Farm
+    - Staking
+    - Liquidity manager
+  exclude_categories:
+    - Stablecoins
+    - CEX
+    - Bridge       # Comment out if you target bridge protocols
+
+# ──────────────────────────────────────────────
+# DEXSCREENER — GHOST LEAD FINDER
+# Free API, no key required
+# ──────────────────────────────────────────────
+dexscreener:
+  enabled: true
+  api_base: "https://api.dexscreener.com"
+  # Strategy: look for tokens with $100k+ liquidity but no/broken website
+  liquidity_min: 100000
+  target_chains:
+    - base
+    - arbitrum
+    - ethereum
+    - bsc
+  # Run these as websearch supplements for discovery across new chains
+  search_queries:
+    - "site:dexscreener.com/base 100k liquidity"
+    - "site:dexscreener.com/arbitrum defi protocol"
+
+# ──────────────────────────────────────────────
+# GECKOTERMINAL — CHAIN MIGRATOR FINDER
+# Free API (GeckoTerminal public API)
+# ──────────────────────────────────────────────
+geckoterminal:
+  enabled: true
+  api_base: "https://api.geckoterminal.com/api/v2"
+  # Fringe chains to scan for newly-launched protocols (Chain Migrator leads)
+  fringe_chains:
+    - network_id: "base"
+      display: "Base"
+    - network_id: "berachain-bartio"
+      display: "Berachain"
+    - network_id: "mantle"
+      display: "Mantle"
+    - network_id: "hyperliquid"
+      display: "Hyperliquid"
+  # Only consider pools launched within this many days ago
+  new_pool_max_age_days: 60
+  # Minimum 24h volume to be considered active
+  min_h24_volume_usd: 5000
+
+# ──────────────────────────────────────────────
+# DAPPRADAR — LEAKY BUCKET FINDER
+# Free tier available, API key optional (higher limits)
+# Get key: https://dappradar.com/developers
+# ──────────────────────────────────────────────
+dappradar:
+  enabled: true
+  # Without API key: use Playwright to scrape rankings page
+  # With API key: use JSON API for structured data
+  api_key: null    # Set to your key if available: "YOUR_KEY_HERE"
+  # Look for protocols where UAW (unique active wallets) is declining
+  uaw_decline_threshold: -0.10   # 10% decline in 30 days = Leaky Bucket signal
+  target_chains:
+    - ethereum
+    - base
+    - arbitrum
+
+# ──────────────────────────────────────────────
+# IMMUNEFI — SECURITY RISK FINDER
+# No API — agent uses Playwright to scan bounty listings
+# ──────────────────────────────────────────────
+immunefi:
+  enabled: true
+  # Protocols with bounty BELOW this amount are Security Risk leads
+  low_bounty_threshold: 5000     # $5k or less
+  # Cross-reference with $50k+ TVL protocols for highest-value Security Risk leads
+  cross_reference_tvl_min: 50000
+
+# ──────────────────────────────────────────────
+# WATCHLIST — PROTOCOLS TO CHECK ON EVERY SCAN
+# Add protocols you are currently tracking or warming up to
+# ──────────────────────────────────────────────
+watchlist:
+  # - slug: "protocol-slug-from-defillama"
+  #   name: "Protocol Display Name"
+  #   note: "Why you're watching this one"
+  #   last_tvl: 0         # Updated automatically after each scan
+  #   last_checked: null  # Updated automatically after each scan
+  - slug: ""   # Add your first watchlist entry here
+    name: ""
+    note: ""
+
+# ──────────────────────────────────────────────
+# DISCOVERY SCHEDULE (for recurring scan automation)
+# ──────────────────────────────────────────────
+schedule:
+  # How often to run a full scan (in days)
+  scan_interval_days: 3
+  # Run a lightweight watchlist-only check (in days)
+  watchlist_check_days: 1
+
+
+# ──────────────────────────────────────────────
+# NEW: SOCIAL & GOVERNANCE SIGNALS
+# ──────────────────────────────────────────────
+social_signals:
+  enabled: true
+  sources: [tweetscout, lunarcrush]
+  # High TVL + Low Social = Project needs a UX/Brand "Face-lift"
+  engagement_drop_threshold: -0.25 
+  min_follower_count: 1000
+
+governance_signals:
+  enabled: true
+  platform: "snapshot"
+  # Target: "Zombie Protocols" (Money is there, but no one is home)
+  max_days_since_last_proposal: 90
+  min_voter_participation: 5
+
+# ──────────────────────────────────────────────
+# NEW: CHAIN-SPECIFIC LOGIC (For Pitch Generation)
+# ──────────────────────────────────────────────
+chain_pain_points:
+  solana:
+    focus: "Account logic optimization & RPC stability"
+    common_bug: "Incomplete Anchor error handling"
+  base:
+    focus: "Gas abstraction (Paymaster) & Social integration"
+    common_bug: "High L1-to-L2 data latency in UI"
+  ethereum_l1:
+    focus: "Gas efficiency (Solidity Optimizer)"
+    common_bug: "Expensive 'for-loops' in reward distribution"
+  fringe_l2s: # Berachain, Mantle, etc.
+    focus: "Bridge UX & Indexing performance"
+    common_bug: "UI showing 'stale' data due to slow subgraphs"
+
+# ──────────────────────────────────────────────
+# ADDITIONAL TARGET CHAINS TO ADD
+# ──────────────────────────────────────────────
+additional_discovery:
+  - chain: "optimism"   # High treasury grants available for devs
+  - chain: "polygon"    # Many "stuck" legacy projects
+  - chain: "zksync"     # Complex UI/UX due to Account Abstraction
+  - chain: "blast"      # High churn rate; needs retention-focused UX

@@ -1,0 +1,114 @@
+# web3-sales-agent Profile Configuration
+# Copy this file to config/profile.yml and fill in your details.
+# This is the single source of truth for your personal data across all modes.
+
+# ──────────────────────────────────────────────
+# YOUR IDENTITY
+# ──────────────────────────────────────────────
+provider:
+  name: "Your Name / Studio Name"
+  email: "you@example.com"
+  twitter: "@yourhandle"
+  telegram: "@yourhandle"
+  ens: "yourname.eth"            # ENS name adds instant Web3 credibility
+  website: "https://yourdomain.xyz"
+  github: "github.com/yourhandle"
+
+# ──────────────────────────────────────────────
+# YOUR SERVICES
+# ──────────────────────────────────────────────
+services:
+  primary: "Smart Contract Security Audit"   # Your main lead hook
+  secondary:
+    - "UI/UX Overhaul and Frontend Rebuild"
+    - "Smart Contract Porting (chain migration)"
+    - "Frontend Chain Integration"
+    - "Architecture and Protocol Design Advisory"
+
+# ──────────────────────────────────────────────
+# PRICING AND DEAL RULES
+# ──────────────────────────────────────────────
+pricing:
+  minimum_deal_usd: 3000            # Skip any engagement below this
+  entry_offer: "free-sanity-check"  # Free entry for Security Risk leads
+  payment_split: "50/50"           # 50% upfront, 50% on delivery
+  preferred_currency: "USDC"       # USDC or equivalent stablecoin
+
+# ──────────────────────────────────────────────
+# TARGET CHAINS (affects scan and scoring)
+# ──────────────────────────────────────────────
+chains:
+  primary:
+    - Base
+    - Arbitrum
+    - Ethereum
+  secondary:
+    - Berachain
+    - Mantle
+    - Hyperliquid
+    - Monad
+  # Fringe chains specifically for Chain Migrator leads
+  fringe:
+    - Berachain
+    - Mantle
+    - Hyperliquid
+    - Monad
+
+# ──────────────────────────────────────────────
+# HARD LEAD FILTERS
+# These are non-negotiables. Leads failing ANY hard filter get "Not a Fit".
+# ──────────────────────────────────────────────
+filters:
+  treasury_min_usd: 100000          # Must have $100k+ in treasury
+  tvl_min_usd: 50000               # Below this = hobby project
+  tvl_max_usd: 2000000             # Above this = likely has internal team
+  block_anonymous_and_unaudited: true  # Require at minimum: named team OR prior audit
+  block_meme_coins: true           # No pure meme/speculative tokens
+
+# ──────────────────────────────────────────────
+# LEAD DISCOVERY — WEEKLY SCAN DEFAULTS
+# ──────────────────────────────────────────────
+scan:
+  # TVL range to focus on in discovery scans
+  tvl_sweet_spot:
+    min: 50000
+    max: 200000
+  # Leaky Bucket detection: TVL decline in last 30 days
+  leaky_bucket_threshold:
+    min_decline: -0.15    # -15% = worried but not dying
+    max_decline: -0.05    # -5% = start of "panic" window
+  # Mcap/TVL max (filter overvalued/hype-driven projects)
+  mcap_tvl_max: 1.0
+  # Categories to exclude from general scan (unless user explicitly targets)
+  exclude_categories:
+    - stablecoins
+    - liquid staking    # Usually too established
+    - CEX               # Not DeFi
+
+# ──────────────────────────────────────────────
+# SCORING WEIGHTS (overrides _shared.md defaults)
+# Adjust these based on your service strengths
+# ──────────────────────────────────────────────
+scoring_weights:
+  block_a_overview: 0.10
+  block_b_ux: 0.20          # Increase if UX is your primary service
+  block_c_security: 0.20    # Increase if audit is your primary service
+  block_d_social: 0.15
+  block_e_financial: 0.25   # Treasury size matters — can they pay?
+  block_f_pitch_fit: 0.10
+
+# ──────────────────────────────────────────────
+# PITCH PREFERENCES
+# ──────────────────────────────────────────────
+pitch:
+  preferred_channel: "twitter-dm"   # twitter-dm | email | telegram | forum
+  # How many follow-ups before marking as cold
+  max_followups: 1
+  followup_wait_days: 7             # Days to wait before first follow-up
+
+# ──────────────────────────────────────────────
+# OPTIONAL: DappRadar API key (for active wallet data)
+# Get free key at: https://dappradar.com/developers
+# ──────────────────────────────────────────────
+# api_keys:
+#   dappradar: "YOUR_KEY_HERE"

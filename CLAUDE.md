@@ -92,6 +92,53 @@ Across all phases:
 
 ---
 
+## Three-Agent Sales Pipeline
+
+When this repo is being used as the **middle research agent** inside the Web3 sales system, the order is mandatory:
+
+1. `career-ops-source`
+   - discovers and deduplicates raw protocol leads
+   - writes them to `web3-sales-agent/data/pipeline.md`
+   - does **not** score, audit, or pitch
+2. `web3-auditing-agent` (this repo)
+   - reads a lead from `web3-sales-agent/data/pipeline.md`
+   - runs the research / diligence workflow
+   - writes the main report to `audit-output/`
+   - writes a structured handoff file to `web3-sales-agent/data/research-handoffs/{slug}.md`
+   - does **not** write outreach copy
+3. `web3-sales-agent`
+   - reads the handoff + linked report
+   - creates the sales brief, pitch, proposal, and tracker updates
+   - must **not** skip the research handoff
+
+For stage 2 handoffs, the report should usually be:
+- `audit-output/[project]-diligence-[YYYYMMDD].md`
+
+If a narrower report is more appropriate, stage 2 may hand off:
+- `audit-output/[project]-audit-[YYYYMMDD].md`
+- `audit-output/[project]-product-[YYYYMMDD].md`
+- `audit-output/[project]-arch-[YYYYMMDD].md`
+- `audit-output/[project]-strategy-[YYYYMMDD].md`
+
+Every stage-2 handoff written to `web3-sales-agent/data/research-handoffs/{slug}.md` must include these fields:
+- `**Protocol:**`
+- `**Slug:**`
+- `**Chain:**`
+- `**Bucket:**`
+- `**Lead Source:**`
+- `**Report Type:**`
+- `**Report Path:**`
+- `**Status:** Research Complete`
+- `**Recommended Service:**`
+- `**Primary Pain:**`
+- `**Pitch Hook:**`
+- `**Proof Points To Use:**`
+- `**Cautions:**`
+
+If the user asks for pitching or sales copy before a stage-2 handoff exists, stop and direct the flow back to research first.
+
+---
+
 ## Command-Style Prompt Library
 
 These are command-style prompts the operator can type directly in chat. They can be written naturally or in slash-style.
@@ -133,6 +180,10 @@ These are command-style prompts the operator can type directly in chat. They can
 - `/expand-security-audit [protocol, finding-id, or report-path]`
 - `/expand-business [protocol, strategy-question, or report-path]`
 - `/expand-uiux [protocol, url, or report-path]`
+- `/sales-research [protocol or pipeline item]`
+  - Run stage 2 of the three-agent sales pipeline and write the report + handoff file
+- `/sales-research-pipeline`
+  - Read `web3-sales-agent/data/pipeline.md`, research queued leads, and emit handoff files for the sales agent
 
 These are routing conventions, not a separate parser. The agent should recognize them as chat instructions and route to the right skill.
 
@@ -255,6 +306,16 @@ When several engagements are running at once:
 - never assume context carries over automatically
 - use protocol memory actively
 - keep a clean boundary between protocol-specific facts, findings, and founder notes
+
+### 11. Sales Research Mode
+
+When the request is part of the three-agent sales workflow:
+- treat `web3-sales-agent/data/pipeline.md` as the shared inbox created by `career-ops-source`
+- use `protocol-diligence` by default, unless the user explicitly wants a narrower report
+- write the stage-2 report to `audit-output/`
+- write the research handoff to `web3-sales-agent/data/research-handoffs/{slug}.md`
+- include report path, service recommendation, pitch hook, proof points, and cautions in the handoff
+- never generate the sales message in stage 2; that belongs to `web3-sales-agent`
 
 ---
 

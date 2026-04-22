@@ -1,0 +1,26 @@
+# output/
+output/
+
+# batch logs and additions (generated at runtime)
+batch/logs/
+batch/tracker-additions/
+
+# scan history (gitignore if you don't want to share your prospect list)
+# data/scan-history.tsv
+
+# Personal config (sensitive — never commit)
+config/profile.yml
+modes/_profile.md
+
+# Service profile (sensitive — never commit your real credentials)
+service-profile.md
+
+# Raw data (personal)
+data/leads.md
+data/pipeline.md
+data/follow-ups.md
+data/research-handoffs/*
+!data/research-handoffs/.gitkeep
+
+# Node
+node_modules/

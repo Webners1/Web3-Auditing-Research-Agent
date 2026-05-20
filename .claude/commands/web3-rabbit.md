@@ -110,11 +110,15 @@ These operate on `web3-sales-agent`. Read the research handoff and generate pitc
 **`pitch {slug}`**
 1. Confirm handoff exists: `web3-sales-agent/data/research-handoffs/{slug}.md`
 2. If not found: "No research handoff for {slug}. Run /web3-rabbit research {slug} first."
-3. If found: read handoff fields (Recommended Service, Primary Pain, Pitch Hook, Proof Points, Cautions)
-4. Read the linked report in `audit-output/`
-5. Generate: sales brief, outreach message (email/DM), and proposal outline
-6. Write to `web3-sales-agent/data/pitches/{slug}-pitch-{YYYYMMDD}.md`
-7. Note: stage 3 agent (`web3-sales-agent/CLAUDE.md`) owns the pitch. Route there if that agent has its own CLAUDE.md.
+3. If found: read handoff fields ONLY — `Primary Pain`, `Pitch Hook`, `Proof Points To Use`, `Cautions`, `Recommended Service` (do NOT load the full audit report)
+4. Run **Insight Extraction** (see `web3-sales-agent/CLAUDE.md` → Insight Extraction section):
+   - Select ONE finding from Proof Points
+   - Translate to business risk sentence (`{insight}`)
+5. Apply **Email Generation Rules** to produce a 3–4 sentence email using only the `{insight}`
+6. Write to `web3-sales-agent/data/pitches/{slug}-pitch-{YYYYMMDD}.md`:
+   - Internal section: full sales brief (recommended service, pricing, proposal outline)
+   - Outreach section: the 3–4 sentence email ONLY — no raw findings, no report summary
+7. The full audit report MUST NOT appear in the pitch file's outreach section or email draft
 
 **`pitch-all`**
 Run `pitch {slug}` for every handoff file in `web3-sales-agent/data/research-handoffs/` that does not already have a corresponding pitch.

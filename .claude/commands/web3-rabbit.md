@@ -149,8 +149,8 @@ Confirm labels were created and print: "Gmail labels ready. Run /web3-rabbit dra
    - Do NOT create a draft without a verified To address
 4. Call `draft_email`:
    - `to`: contact email
-   - `subject`: subject from pitch
-   - `body`: outreach text, plain text only (no markdown bold/headers — email clients render this as literal asterisks)
+   - `subject`: neutral subject — e.g. "quick note on [protocol name]" (never "vulnerability", "audit", "security issue")
+   - `body`: the 3–4 sentence outreach email from the pitch file's **Outreach Email** section ONLY — plain text, no markdown, no findings list, no report summary, no attachments
    - Label: `Web3-Rabbit/Pending`
 5. Update pitch file: add line `**Gmail Draft ID:** {id}` and `**Draft Created:** {YYYY-MM-DD}`
 6. Print: "Draft saved. Open Gmail → Drafts to review. After you send it, run `/web3-rabbit pipeline` to update the status to Pitched."

@@ -223,7 +223,8 @@ If `data/research-handoffs/` is missing, create it. This folder is where the sta
 Mode meanings:
 - `scan` triggers stage 1 and stops after filling the inbox
 - `evaluate` converts a stage-2 handoff into a stage-3 sales brief
-- `pitch` turns the handoff + report + sales brief into outreach
+- `pitch` runs Insight Extraction → then generates the outreach email
+- `draft` creates the Gmail draft from the extracted insight email only
 
 ---
 
@@ -235,6 +236,9 @@ Mode meanings:
 | `/web3-sales scan` | Run stage 1 lead discovery via `career-ops-source` |
 | `/web3-sales evaluate [protocol]` | Build a sales brief from the completed research handoff |
 | `/web3-sales pitch [protocol]` | Generate outreach from the handoff + report |
+| `/web3-sales draft [protocol]` | Create Gmail draft for a pitch-ready lead |
+| `/web3-sales inbox` | Check Gmail for replies from protocol teams |
+| `/web3-sales label-setup` | Create Web3 Rabbit Gmail labels (one-time setup) |
 | `/web3-sales compare` | Rank multiple sales-ready leads |
 | `/web3-sales deep [protocol]` | Build a richer pre-call brief using the handoff and report |
 | `/web3-sales tracker` | Show pipeline status |
@@ -273,6 +277,91 @@ If any required field is missing, treat the lead as not ready for sales.
 
 ---
 
+## Gmail Automation
+
+This agent uses the Gmail MCP (`@gongrzhe/server-gmail-autoauth-mcp`) to create email drafts and monitor replies. See `docs/gmail-setup.md` for the one-time OAuth setup.
+
+### Draft-and-Confirm Model
+
+The agent **never sends email automatically.** The workflow is:
+
+```
+pitch generated → agent creates Gmail draft → user reviews in Gmail → user clicks Send
+                                                                              ↓
+                                              agent monitors inbox for replies → updates tracker
+```
+
+### Label Structure
+
+On first use, run `/web3-sales label-setup`. This creates:
+- `Web3-Rabbit/Pending` — draft created, not yet sent
+- `Web3-Rabbit/Sent` — outreach sent (apply manually after sending)
+- `Web3-Rabbit/Replied` — protocol team has responded (agent applies this)
+- `Web3-Rabbit/Call-Scheduled` — discovery call booked
+
+### Finding the Contact Email
+
+When creating a draft, search for the team's contact in this order:
+1. Read the pitch file — check for email found during research
+2. `search_emails` query: `from:{protocol-domain} OR to:{protocol-domain}`
+3. WebSearch: `"{protocol name}" team email contact security OR audit site:twitter.com OR site:linkedin.com`
+4. Check the protocol's docs for a security disclosure email
+5. If no email found: note "contact not found — use Twitter DM" in the pitch file and skip draft creation
+
+### Draft Creation (mode: `draft`)
+
+When the user runs `/web3-sales draft {slug}`:
+
+1. Read `data/pitches/{slug}-pitch-{date}.md` (handoff only — ~300 tokens)
+2. Extract: To address, subject line, pitch body (Option A or B from the pitch file)
+3. Call `draft_email`:
+   ```
+   to: {contact email}
+   subject: {subject from pitch}
+   body: {outreach draft text — plain text, no markdown}
+   ```
+4. After draft is created, update the pitch file: add `**Draft ID:** {id}` and `**Draft Created:** {date}`
+5. Update `data/leads.md` status to `Draft Created`
+6. Print: "Draft created in Gmail. Open Drafts → review → click Send. Run `/web3-sales inbox` to check for replies."
+
+### Reply Monitoring (mode: `inbox`)
+
+When the user runs `/web3-sales inbox`:
+
+1. Load `data/leads.md` — find all rows with status `Pitched`
+2. For each pitched lead, call `search_emails`:
+   ```
+   query: from:{protocol-domain} in:inbox after:{pitch-date}
+   ```
+3. If a reply is found:
+   - Call `read_email` on the thread to extract the reply text
+   - Summarize the response (positive / negative / question / ignored)
+   - Update `data/leads.md` status to `Responded`
+   - Apply label `Web3-Rabbit/Replied` to the thread
+   - Print a summary: "Reply from {protocol}: {one-line summary}"
+4. If no replies: "No new replies from {N} pitched leads."
+
+### Gmail Tool Reference
+
+| Tool | When Used | Key Args |
+|------|-----------|----------|
+| `draft_email` | After pitch generation | `to`, `subject`, `body`, `cc` (optional) |
+| `search_emails` | Reply monitoring | Gmail search query string |
+| `read_email` | Reading a reply | Email ID from search result |
+| `list_email_labels` | One-time: verify labels exist | — |
+| `create_label` | One-time: create label hierarchy | `name`, `color` |
+
+### Context Budget for Gmail Modes
+
+| Mode | Load | Do NOT load |
+|------|------|-------------|
+| `draft {slug}` | pitch file only | full audit report, leads.md |
+| `inbox` | leads.md status column only | any pitch files |
+
+Email bodies are short — inline. No intermediate files needed for Gmail modes.
+
+---
+
 ## Pipeline Integrity
 
 1. Never add new entries directly to `data/leads.md` by hand.
@@ -281,6 +370,7 @@ If any required field is missing, treat the lead as not ready for sales.
 4. All tracker statuses must be canonical.
 5. Every stage-3 report must point back to the stage-2 report path it used.
 6. A pitch must never be generated without a completed research handoff.
+7. A draft must never be created without a pitch file existing in `data/pitches/`.
 
 ### Canonical Statuses
 
@@ -289,8 +379,9 @@ If any required field is missing, treat the lead as not ready for sales.
 | `Research Pending` | Raw lead exists but no stage-2 handoff yet |
 | `Research Complete` | Stage-2 handoff exists and sales work can begin |
 | `Evaluated` | Stage-3 sales brief generated |
-| `Pitched` | Outreach sent |
-| `Responded` | Protocol team replied |
+| `Draft Created` | Gmail draft created — awaiting user review and Send |
+| `Pitched` | Outreach sent (user manually applied after clicking Send) |
+| `Responded` | Protocol team replied — agent detected via inbox check |
 | `Call Scheduled` | Discovery call booked |
 | `Proposal Sent` | Proposal delivered |
 | `Negotiating` | Active discussion |

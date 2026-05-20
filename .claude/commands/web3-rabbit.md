@@ -28,8 +28,12 @@ Split `$ARGUMENTS` on the first space: `{sub-command} {target?}`
 | `research-all` | 2 | Research every unresearched lead in pipeline |
 | `pitch {slug}` | 3 | Generate pitch brief for one researched lead |
 | `pitch-all` | 3 | Generate pitch briefs for all researched leads |
+| `draft {slug}` | 3 | Create Gmail draft for a pitch-ready lead |
+| `draft-all` | 3 | Create Gmail drafts for all pitches that don't have drafts yet |
+| `inbox` | 3 | Check Gmail for replies from protocol teams |
+| `label-setup` | 3 | Create Web3-Rabbit Gmail labels (one-time) |
 | `pipeline` | all | View current state across all three stages |
-| `run` | all | Autonomous full pipeline: scan → score → research → pitch |
+| `run` | all | Autonomous full pipeline: scan → score → research → pitch → draft |
 | `status` | all | Health check across all three agents |
 | (empty) | — | Show this command menu |
 
@@ -117,6 +121,67 @@ Run `pitch {slug}` for every handoff file in `web3-sales-agent/data/research-han
 
 ---
 
+### Gmail Commands (`draft`, `draft-all`, `inbox`, `label-setup`)
+
+These commands use the Gmail MCP (`gmail` server in `.mcp.json`). Requires one-time OAuth setup — see `web3-sales-agent/docs/gmail-setup.md`. The agent **never sends email** — it creates drafts for user review.
+
+**`label-setup`**
+One-time setup. Call:
+```
+create_label: "Web3-Rabbit"
+create_label: "Web3-Rabbit/Pending"
+create_label: "Web3-Rabbit/Sent"
+create_label: "Web3-Rabbit/Replied"
+create_label: "Web3-Rabbit/Call-Scheduled"
+```
+Confirm labels were created and print: "Gmail labels ready. Run /web3-rabbit draft {slug} to create your first draft."
+
+**`draft {slug}`**
+1. Read pitch file: `web3-sales-agent/data/pitches/{slug}-pitch-*.md` (load body only — skip the full sales brief)
+2. Extract: To email, Subject, and the outreach body text (Option A from the pitch)
+3. If no email address found in pitch file:
+   - Try: WebSearch `"{protocol name}" security contact email site:twitter.com OR "{protocol} team email"`
+   - If still not found: print "No contact email found for {slug}. Add it manually to the pitch file as `**Contact Email:**` then re-run."
+   - Do NOT create a draft without a verified To address
+4. Call `draft_email`:
+   - `to`: contact email
+   - `subject`: subject from pitch
+   - `body`: outreach text, plain text only (no markdown bold/headers — email clients render this as literal asterisks)
+   - Label: `Web3-Rabbit/Pending`
+5. Update pitch file: add line `**Gmail Draft ID:** {id}` and `**Draft Created:** {YYYY-MM-DD}`
+6. Print: "Draft saved. Open Gmail → Drafts to review. After you send it, run `/web3-rabbit pipeline` to update the status to Pitched."
+
+**`draft-all`**
+Run `draft {slug}` for every file in `web3-sales-agent/data/pitches/` that does not contain a `**Gmail Draft ID:**` line.
+
+**`inbox`**
+Check Gmail for replies from pitched leads.
+
+1. Read `web3-sales-agent/data/leads.md` — extract all rows where Status = `Pitched`
+2. For each pitched lead, run:
+   ```
+   search_emails query: "label:Web3-Rabbit/Sent" after:{pitch_date_minus_1_day}
+   ```
+   Then for each protocol domain: `search_emails query: from:{domain} in:inbox`
+3. For each reply found:
+   - Call `read_email` to get the reply text (first 500 chars)
+   - Classify response: `Positive` / `Negative` / `Question` / `Bounced` / `Auto-reply`
+   - Apply label `Web3-Rabbit/Replied` to the thread
+   - Print: `✓ {slug} replied — {classification}: "{first 100 chars of reply}"`
+4. Print summary:
+   ```
+   Inbox Check — {date}
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   {N} pitched leads checked
+   Replies: {M}
+     ✓ {slug} — {classification}
+     ...
+   No reply: {K} leads
+   → Run /web3-rabbit pipeline for full status
+   ```
+
+---
+
 ### Cross-Stage Commands (`pipeline`, `run`, `status`)
 
 **`pipeline`**
@@ -153,14 +218,15 @@ STAGE 3 — Pitches
 
 **`run`**
 Autonomous full pipeline execution. Confirm with user before starting:
-"Running full pipeline: scan → score → research top leads → generate pitches. Confirm? (y/n)"
+"Running full pipeline: scan → score → research top leads → generate pitches → create Gmail drafts. Confirm? (y/n)"
 
 On confirmation:
 1. Run `scan` (batch mode)
 2. Run `score` to rank new leads
 3. Run `research` for all leads scored 7+ (CRITICAL/HIGH with budget evidence)
 4. Run `pitch` for all completed research handoffs
-5. Print final `pipeline` summary
+5. Run `draft-all` to create Gmail drafts for all new pitches
+6. Print final `pipeline` summary with draft count
 
 **`status`**
 Check health across all three agents:
@@ -184,6 +250,9 @@ Web3 Rabbit Status
   web3-sales-agent/
     leads.md:          {exists / missing}
     pitches/:          {N} pitch briefs
+    Gmail MCP:         {CONNECTED / NOT CONFIGURED}
+    Drafts pending:    {N} (pitches without Gmail Draft ID)
+    Inbox replies:     check with /web3-rabbit inbox
 ```
 
 ---
@@ -209,12 +278,16 @@ Stage 2 — Research (web3-auditing-agent):
   research {slug}     Full diligence for one protocol
   research-all        Diligence for all unresearched leads (ordered by score)
 
-Stage 3 — Pitching (web3-sales-agent):
+Stage 3 — Pitching + Email (web3-sales-agent):
   pitch {slug}        Sales brief + outreach for one researched lead
   pitch-all           Pitches for all completed research
+  draft {slug}        Create Gmail draft for a pitch-ready lead
+  draft-all           Create Gmail drafts for all un-drafted pitches
+  inbox               Check Gmail for replies from pitched leads
+  label-setup         Create Web3-Rabbit Gmail labels (one-time)
 
 Full Pipeline:
   pipeline            View state across all three stages
-  run                 Autonomous scan → score → research → pitch
-  status              Health check across all three agents
+  run                 Autonomous scan → score → research → pitch → draft
+  status              Health check across all three agents + Gmail
 ```

@@ -1,8 +1,9 @@
 # Sales Brief — Mycelium Perpetual Pools
 **Date:** 2026-05-20  
+**Analyst:** Muzammil Siddiqui  
 **Stage:** Evaluated  
-**Recommended Approach:** Responsible disclosure + targeted remediation offer  
-**Confidence:** Medium-Low (wind-down protocol, ~10–15% response, ~5% conversion to paid)
+**Approach:** Responsible disclosure + targeted remediation offer  
+**Conversion probability:** ~10–15% (wind-down protocol)
 
 ---
 
@@ -13,105 +14,107 @@
 | Protocol | Mycelium Perpetual Pools (formerly Tracer) |
 | Chain | Arbitrum One |
 | TVL | ~$183k (declining) |
-| Bucket | HIGH (finding severity) |
+| Severity | HIGH finding |
 | Status | Wind-down — UI shows "Close Positions" |
 | Contact | @mycelium_xyz (Twitter) |
+| GitHub | mycelium-ethereum |
 
 ---
 
-## Why This Is Worth an Outreach (Despite Wind-Down)
+## Why Send This Outreach
 
-1. **$183k of user funds are at risk from an unpatched HIGH finding.** The team acknowledged the exact vulnerability in their own GitHub (Discussion #284, Dec 2021) and never fixed it.
-2. The vulnerability (missing Arbitrum L2 sequencer health check) is a well-known class of issue — the fix is 20 lines of code, not a full re-audit.
-3. Reaching out positions you as the person who found and can fix this — not as someone trying to sell a service.
-4. If they have an active new product in development, this opens a door.
+1. **Their own team documented the vulnerability** — GitHub Discussion #284 (Dec 2021) acknowledges the missing L2 sequencer health check. It was never fixed. That makes this a warm lead, not a cold pitch — they already know the problem exists.
+2. **$183k of user funds are actively at risk.** Not a hypothetical — if Arbitrum sequencer goes offline (it has before), pool upkeep runs with stale Chainlink prices and drains the losing side on restoration.
+3. **The fix is 20 lines of code.** But because the contracts are non-upgradeable minimal proxies, it requires a new OracleWrapper deployment and pool migration. That's where the paid work is.
+4. **If they have a new product,** the disclosure opens a door — "here's what we found in your old contracts so you don't repeat it."
 
 ---
 
-## Sales Brief
+## Primary Pain
+Missing Arbitrum L2 Sequencer Health Check in OracleWrapper. Their GitHub Discussion #284 acknowledged it in December 2021. Unresolved for 3+ years. $183k in non-upgradeable contracts.
 
-**Primary pain:** Missing L2 sequencer health check in OracleWrapper — if Arbitrum sequencer goes offline (which has happened), pool upkeep runs with stale Chainlink prices. On restoration, accumulated price delta drains the losing pool side. Their team discussed this in GitHub Discussion #284 in December 2021 and never shipped the fix.
-
-**Why now:** Non-upgradeable contracts mean the fix requires new OracleWrapper deployment. Every day this is unaddressed with $183k in the pool is a day the risk is live. The longer the protocol runs in wind-down without fixing this, the more reputational risk accumulates.
-
-**Proof points:**
-- GitHub Discussion #284: team's own acknowledgment of the gap
-- Code4rena Oct 2021 audit: keeper reward formula also broken (users depend on altruistic keepers)
-- No re-audit in 3+ years
-- GMX V2 and Synthetix implement the exact fix — this is solved, standard code
-
-**Offer:** Targeted remediation consulting — not a full audit. Spec the fix, implement new OracleWrapper, write migration instructions. 2–3 days of work.
+## Pitch Hook
+"Your team raised this in GitHub Discussion #284 back in 2021 and never shipped the fix. I'm a blockchain developer — I can spec and deliver the new OracleWrapper in 2 days. Happy to share the full finding regardless."
 
 ---
 
 ## Outreach Drafts
 
-### Option A — Direct Message (Twitter/X or Telegram)
+### Option A — Twitter/X DM (Recommended — under 100 words)
 
-> Hey Mycelium team — I was reviewing Perpetual Pools contracts for a research piece and noticed Discussion #284 in your GitHub (the L2 sequencer health flag) is still unresolved.
+Subject: N/A (DM)
+
+> Hey Mycelium team — I reviewed the Perpetual Pools contracts and noticed Discussion #284 in your GitHub (L2 sequencer health check) is still unresolved. With $183k still in the pools, this is a live risk — Chainlink explicitly calls this out for Arbitrum deployments, and GMX + Synthetix both have the fix shipped.
 >
-> With $183k still in the pools, this is a live risk — Chainlink explicitly calls out that Arbitrum deployments need the sequencer uptime check or stale prices can execute during outages. GMX and Synthetix both have this fix deployed.
+> I'm Muzammil, Senior Blockchain Dev at Zybra Labs (20+ DApps, Cyfrin security certified). I can spec and deliver a new OracleWrapper + migration guide in 2 days. Happy to share the full finding regardless — no pressure.
 >
-> I can spec and deliver a new OracleWrapper + migration guide in 2–3 days. Happy to share the full finding if it's useful regardless. [Name] — [contact]
+> muzammilsiddiqui001@gmail.com | github.com/Webners1
 
 ---
 
-### Option B — Email (if team email is findable)
+### Option B — Email
 
-> Subject: Unresolved L2 sequencer vulnerability in Perpetual Pools — quick fix available
->
-> Hi [Name],
->
-> I've been reviewing the Mycelium Perpetual Pools contracts as part of protocol research and wanted to flag something that's still open: the L2 sequencer health check your team discussed in GitHub Discussion #284 back in December 2021 was never implemented.
->
-> With ~$183k still locked in the pools, this represents a live risk. When Arbitrum's sequencer goes offline, Chainlink oracles stop updating — but your contracts continue executing upkeep with stale prices. The Chainlink docs explicitly flag this for L2 deployments. GMX V2 and Synthetix both have the fix deployed.
->
-> The fix is about 20 lines in OracleWrapper.sol, but because the contracts use a non-upgradeable clone pattern, it requires a new deployment and pool migration. I can spec and deliver this in 2–3 days.
->
-> I'm happy to share the full finding regardless — no strings attached. If you have a new product in development, I'd also be glad to discuss what we saw in Pools to make sure it doesn't carry over.
->
-> [Your name]  
-> [Link to proof-of-work or brief bio]  
-> [Contact: email, Telegram, Twitter]
+**To:** [team@mycelium.xyz or security contact — find on their site/GitHub]  
+**Subject:** Unresolved L2 sequencer vulnerability in Perpetual Pools — 2-day fix available
 
----
-
-### Option C — Responsible Disclosure Only (no ask)
-
-> Hey team — your Perpetual Pools contracts are missing the Arbitrum L2 sequencer health check in OracleWrapper (your Discussion #284 from Dec 2021). $183k is still in the pools. Happy to share the full finding at [link/email]. No sell.
+> Hi Mycelium team,
+>
+> I've been reviewing the Perpetual Pools contracts and found that the L2 sequencer health check your team discussed in GitHub Discussion #284 (December 2021) was never implemented.
+>
+> With ~$183k still locked in the pools, this is a live exposure. When Arbitrum's sequencer goes offline, Chainlink oracles stop updating — but your PoolKeeper continues calling upkeep with stale prices. On sequencer restoration, the accumulated price delta drains the losing pool side in one cycle. GMX V2 and Synthetix both have this specific fix deployed.
+>
+> The fix is a new OracleWrapper deployment (~20 lines) plus a pool migration guide. Because the contracts use a non-upgradeable clone pattern, that's the only path to resolution.
+>
+> I'm Muzammil Siddiqui — Senior Blockchain Developer at Zybra Labs, Cyfrin-certified in smart contract security, with 20+ DApps shipped as a contractor across Ethereum, Arbitrum, and Base. I can spec and deliver the fix in 2 days.
+>
+> Happy to share the full finding regardless — no strings attached. If you have an active new product in development, I'd also be glad to share what we saw in Pools so it doesn't carry forward.
+>
+> Muzammil Siddiqui  
+> muzammilsiddiqui001@gmail.com  
+> github.com/Webners1  
+> Senior Blockchain Developer, Zybra Labs
 
 ---
 
-## Pitch Routing
+### Option C — Responsible Disclosure Only (no sell)
+
+> Hey — your Perpetual Pools contracts are missing the Arbitrum L2 sequencer health check (Discussion #284, Dec 2021, still unresolved). $183k is still in the pools. Full finding at muzammilsiddiqui001@gmail.com — no sell.
+> — Muzammil, github.com/Webners1
+
+---
+
+## After They Respond
 
 | Response | Next Step |
 |---|---|
-| No response after 7 days | No follow-up — wind-down protocol |
-| "Thanks, we know about it" | Ask if they have a new product — pivot pitch |
-| "Can you spec the fix?" | Move to proposal: OracleWrapper remediation, $1,500–$3,000 |
-| "Can you do a full audit?" | Full audit scope discussion — $5,000–$12,000 range |
+| No reply after 7 days | Close lead — no follow-up for wind-down protocol |
+| "Thanks, aware of it" | Ask: "Do you have a new product in development? Happy to apply these findings there." |
+| "Can you spec the fix?" | Proposal: OracleWrapper remediation — $1,500–$3,000 |
+| "Can you do a full review?" | Full audit scope: $4,000–$8,000 for full contract suite |
+| "Here's our new product" | Full diligence run on new protocol — restart pipeline |
 
 ---
 
 ## Proposal Outline (if requested)
 
-**Scope:** Targeted OracleWrapper Remediation for Mycelium Perpetual Pools
+**Scope:** OracleWrapper Remediation — Mycelium Perpetual Pools on Arbitrum
 
 **Deliverables:**
-1. Updated `OracleWrapper.sol` with Chainlink Sequencer Uptime Feed check
-2. Deploy script for new OracleWrapper on Arbitrum
-3. Pool migration guide (steps for deploying new pools pointing to fixed oracle)
-4. Written summary of other findings (FINDING-002 keeper rewards, FINDING-003 circuit breaker)
+1. New `OracleWrapper.sol` with Chainlink Sequencer Uptime Feed check (Arbitrum: `0xFdB631F5EE196F0ed6FAa767959853A9F217697D`)
+2. Deploy script for Arbitrum mainnet
+3. Pool migration guide: steps to deploy new pools pointing to the fixed oracle
+4. Written summary of remaining findings (keeper reward formula, circuit breaker gap, fee precision)
 
-**Timeline:** 3–5 business days  
-**Price range:** $1,500–$4,000 (targeted remediation; not a full audit)
+**Timeline:** 2–3 business days after kickoff  
+**Price:** $1,500–$3,000 (targeted remediation — not a full audit)  
+**Payment:** 50% upfront (USDC), 50% on delivery
 
-**Not included:** Full audit of all contracts, frontend changes, new pool deployment execution (advisory only).
+**Not included:** Full audit, frontend changes, deploying new pools on your behalf (advisory only)
 
 ---
 
-## Tracker Update
+## Gmail Draft
 
-```tsv
-mycelium-perpetual-pools	2026-05-20	Mycelium Perpetual Pools	Arbitrum	$183k	HIGH	Evaluated	Option A DM	audit-output/mycelium-perpetual-pools-diligence-20260520.md	Wind-down; responsible disclosure angle; check for new product
-```
+**Contact Email:** [find at github.com/mycelium-ethereum or mycelium.xyz — check README/CONTRIBUTING for security email]  
+**Draft created:** [pending Gmail OAuth setup]  
+**Draft ID:** [pending]

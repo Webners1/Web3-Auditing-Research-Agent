@@ -99,6 +99,38 @@ External inputs this agent depends on:
 
 ---
 
+## Context Budget — Critical Rules
+
+This agent reads large files (reports, handoffs, leads trackers). Left unmanaged, a single pitch session consumes 20k–30k tokens unnecessarily.
+
+### What to Load for Each Mode
+
+| Mode | Load | Do NOT load |
+|------|------|-------------|
+| `pitch {slug}` | handoff file only (~300 tokens) | full audit report |
+| `evaluate {slug}` | handoff + report **Executive Summary section only** | full report body |
+| `deep {slug}` | handoff + **Findings section** + **Strategy section** | rest of report |
+| `compare` | handoff files only (one per protocol) | any full reports |
+| `pipeline` | list of handoff file names only | any handoff content |
+| `tracker` | leads.md (full, it's structured) | any reports |
+
+### Report Extraction Rule
+When a mode requires part of a report, **read only the matching section**, not the full file:
+```bash
+# Extract just the Executive Summary (first ~100 lines usually)
+head -100 ../audit-output/{slug}-diligence-{date}.md
+
+# Extract Findings section
+grep -A 50 "^## Security Findings\|^## Findings" ../audit-output/{slug}-*.md | head -80
+```
+
+Never load a full audit report into context. The handoff's **Proof Points** and **Primary Pain** fields contain everything needed for 95% of pitch work.
+
+### Profile Loading — Once Per Session
+Load `service-profile.md`, `config/profile.yml`, and `modes/_profile.md` **once** at session start. Do not re-read them per protocol when processing multiple leads.
+
+---
+
 ## Session Startup Protocol
 
 On the first message of every session, run silently:
@@ -107,12 +139,16 @@ On the first message of every session, run silently:
 node scripts/verify-pipeline.mjs 2>/dev/null || echo "verify skipped"
 ```
 
+Then load once:
+- `service-profile.md` (your credentials and services)
+- `config/profile.yml` (identity and targets)
+- `modes/_profile.md` (tone, pricing, objections)
+
 Then check:
 1. Does `service-profile.md` exist?
 2. Does `config/profile.yml` exist?
 3. Does `modes/_profile.md` exist?
 4. Does `data/research-handoffs/` exist?
-5. Does `../career-ops-source/portals.yml` exist?
 
 If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silently.
 

@@ -50,21 +50,26 @@ The agent should improve its guidance over time by:
 
 ## Default Engagement Flow
 
-Use this sequence unless the user explicitly requests a narrower pass:
+**Load `skills/context-engine/SKILL.md` before any multi-phase engagement.** It defines phase boundaries, budget rules, and filesystem discipline that prevent context overflow on large protocols.
 
-1. **Assess the product first** — Run `skills/product-assessor/SKILL.md`. Map user journey, trust model, offchain dependencies, contract surface. Evaluate one primary workflow and one failure path. Build 2026 market-readiness baseline.
+Use this sequence unless the user explicitly requests a narrower pass. Each phase loads ONE skill, writes its output to disk, then unloads before the next phase starts.
 
-2. **Scope and discover contracts** — Identify the real contract surface. Run Pashov `x-ray` if available.
+| Phase | Load | Write to disk | Budget |
+|-------|------|---------------|--------|
+| 0 — Memory check | `protocol-memory` | `memory/protocols/{slug}/profile.md` | ~3k |
+| 1 — Product | `product-assessor` | `memory/protocols/{slug}/product-notes.md` | ~12k |
+| 2 — Security | `web3-audit` | `memory/protocols/{slug}/findings.md` | ~15k |
+| 3 — Architecture | `arch-advisor` | `memory/protocols/{slug}/arch-notes.md` | ~10k |
+| 4 — Strategy | `ceo-advisor` | `memory/protocols/{slug}/strategy-notes.md` | ~10k |
+| 5 — Report | `report-standards` | `audit-output/{slug}-diligence-{date}.md` | ~25k |
+| 6 — Handoff | inline | `web3-sales-agent/data/research-handoffs/{slug}.md` | ~3k |
 
-3. **Run the full audit** — Run `skills/web3-audit/SKILL.md`. Validate all findings with proof discipline.
-
-4. **Design the remediation** — Run `skills/remediation-architect/SKILL.md`. Choose the best fixes, not just the fastest.
-
-5. **Advise on architecture** — Run `skills/arch-advisor/SKILL.md`. Improve upgradeability, composability, scalability.
-
-6. **Advise like a CEO** — Run `skills/ceo-advisor/SKILL.md`. Benchmark against live market direction with function-matched comparable sets.
-
-7. **Produce the executive package** — Run `skills/protocol-diligence/SKILL.md` or consolidate outputs manually.
+**Rules:**
+- Read contracts one at a time. Extract finding → write to `findings.md` → discard from context.
+- Never keep raw fetched HTML in context. Extract facts, discard the rest.
+- Each phase reads only the *Phase Handoff* section of prior phases (50 tokens each), not full files.
+- Phase 5 (Report assembly) is the only phase that loads all phase outputs simultaneously.
+- Handoff (Phase 6) is ~300 tokens written from memory — do NOT load the full report to write it.
 
 Across all phases: use `skills/protocol-memory/SKILL.md` to load and update protocol memory; use `skills/founder-copilot/SKILL.md` when the user is ideating.
 

@@ -277,6 +277,105 @@ If any required field is missing, treat the lead as not ready for sales.
 
 ---
 
+## Insight Extraction — Mandatory Step Before Any Email
+
+The full diligence report and handoff are **internal state only**. They are never attached, quoted, or summarised in outbound email. Before generating any outreach, run this extraction step.
+
+### Step 1 — Select One Finding
+
+Read the handoff's `**Proof Points To Use:**` and `**Primary Pain:**` fields only (not the full report). Apply this filter to select exactly ONE finding:
+
+| Criterion | Rule |
+|-----------|------|
+| Impact | Must be directly tied to money, users, or protocol continuity |
+| Non-obvious | Not "update dependencies" or "add comments" — something they wouldn't catch without knowing where to look |
+| Specific | Tied to a named contract, mechanism, or integration — not a category of risk |
+| Provable | You can point to it without guessing |
+
+If the handoff has a CRITICAL or HIGH finding, always select it. If all findings are MEDIUM or LOW, select the one with the most concrete business consequence.
+
+### Step 2 — Translate to Business Risk
+
+Map the technical finding to the protocol's specific business model. Use this mapping table:
+
+| Protocol Type | Technical Class | Business Risk Translation |
+|---------------|----------------|--------------------------|
+| DeFi / Lending | Reentrancy, access control | "liquidity pool drained in a single transaction" |
+| DeFi / Lending | Oracle manipulation | "collateral mispriced — bad debt accumulates silently" |
+| Derivatives / Perps | Missing circuit breaker | "leveraged positions wiped during a normal volatility event" |
+| Derivatives / Perps | Keeper / oracle staleness | "pool balances corrupted during network downtime — impossible to unwind cleanly" |
+| DEX / AMM | Price manipulation | "LP positions sandwiched at scale — liquidity exits" |
+| Bridge | Replay / double-spend | "cross-chain assets locked or minted twice" |
+| NFT / Gaming | Minting exploit | "token supply broken — floor price collapses" |
+| DAO / Treasury | Governance attack | "proposal passes with a flash-loaned quorum" |
+| Any | No timelock on admin | "fee parameters changed against users between deposit and withdrawal" |
+
+Write the translation as a **single sentence of business risk**. It must:
+- Name the consequence in business terms (funds, users, reputation)
+- Include a protocol-specific anchor (e.g. "your oracle integration", "your upkeep mechanism", "your deposit flow")
+- NOT name the vulnerability class, file, or line number
+
+Store this internally as `{insight}`. This is the only piece of audit data that enters the email.
+
+### Step 3 — Compose the Email
+
+Apply the Email Generation Rules below. The `{insight}` is the only audit data allowed in.
+
+---
+
+## Email Generation Rules
+
+Every outbound email must follow this exact structure. No exceptions.
+
+### Structure (3–4 sentences total)
+
+**Sentence 1 — Hook (proves you found something specific):**
+"I reviewed [protocol name]'s [named area — e.g. oracle integration / upkeep mechanism / deposit flow] and flagged something that [brief non-technical description of what it affects]."
+
+**Sentence 2 — Business risk (makes them feel the consequence):**
+The `{insight}` sentence. One sentence. Business language only. No CVEs, no Solidity, no line numbers.
+
+**Sentence 3 — Withhold + soft CTA:**
+"I've documented the specifics — want me to send over the brief?" 
+OR: "Happy to share the one-page summary if useful."
+OR: "I can walk you through it in 15 minutes if you want to see it."
+
+**Sentence 4 (optional — use only if the protocol is declining/winding down):**
+"Either way, thought it was worth flagging."
+
+### Hard Rules
+
+| Rule | Detail |
+|------|--------|
+| Max length | 3–4 sentences. Never more. |
+| No report in email | Never attach, link, paste, or summarise the full report |
+| No technical terms | No "reentrancy", "calldata", "Solidity", "EVM", "ABI", ".sol" in the email body |
+| No "report below" | Banned phrases: "attached", "report below", "here is the audit", "findings include", "I found X vulnerabilities" |
+| No list of issues | One insight only. Lists signal "I did a scan and dumped it". One specific thing signals "I understood your system" |
+| Proof of specificity | The hook must name a concrete area of the protocol, not a generic risk category |
+| Soft CTA only | Never demand a call, a contract, or a budget conversation in the first message |
+| Sign-off | Name + one link only (GitHub or profile — not both) |
+
+### Banned Openers
+
+Never start with:
+- "I hope this email finds you well"
+- "I wanted to reach out"
+- "My name is X and I"
+- "I am a smart contract auditor"
+- "I noticed your protocol has some issues"
+
+### Good vs Bad Examples
+
+| Bad | Good |
+|-----|------|
+| "I found 3 vulnerabilities in your contracts including a reentrancy in LiquidityPool.sol line 142." | "I reviewed your deposit mechanism and flagged something that could allow balances to be manipulated without a direct transaction." |
+| "Attached is my full audit report of your protocol." | "I documented the specifics — want me to send over the summary?" |
+| "Your contracts have not been audited since 2021 which is a serious risk." | "There's a gap in your oracle integration that's been open since your last audit cycle — pool balances could be corrupted during a network event." |
+| "I am Muzammil, a senior blockchain developer with 3 years experience..." | Start with the finding. Never with your bio. |
+
+---
+
 ## Gmail Automation
 
 This agent uses the Gmail MCP (`@gongrzhe/server-gmail-autoauth-mcp`) to create email drafts and monitor replies. See `docs/gmail-setup.md` for the one-time OAuth setup.

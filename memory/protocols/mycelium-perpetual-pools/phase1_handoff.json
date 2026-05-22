@@ -1,0 +1,10 @@
+{
+  "slug": "mycelium-perpetual-pools",
+  "protocol_name": "Mycelium Perpetual Pools",
+  "primary_chain": "Arbitrum",
+  "contract_addresses": [
+    "0xDRY_RUN"
+  ],
+  "suspected_vulnerability": "dry-run placeholder",
+  "product_summary": "dry-run placeholder"
+}

@@ -1,0 +1,6 @@
+{
+  "slug": "mycelium-perpetual-pools",
+  "business_risk_summary": "dry-run: liquidity pool exposed under specific conditions",
+  "findings_saved": true,
+  "severity": "MEDIUM"
+}

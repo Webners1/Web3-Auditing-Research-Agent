@@ -58,8 +58,9 @@ Run cross-source enrichment sequence (DefiLlama → Commonwealth → L2Beat → 
 
 **`score`**
 Load `career-ops-source/modes/score.md`.
-Apply scoring matrix to all `- [ ]` entries in `web3-sales-agent/data/pipeline.md`.
-Output ranked list.
+Call `search_leads` (rabbit-pipeline MCP) with `status: "unresearched"` to get all pending leads.
+Apply scoring matrix to results and output ranked list.
+(pipeline.md is auto-generated — read from DB, not the file directly.)
 
 **`patterns`**
 Load `career-ops-source/modes/patterns.md`.
@@ -73,22 +74,27 @@ Output source performance analysis and keyword intelligence.
 These operate on this repo (web3-auditing-agent). Load the appropriate skill and run diligence.
 
 **`research {slug}`**
-1. Find the lead in `web3-sales-agent/data/pipeline.md` by slug or name match
-2. Extract: URL, name, chain, lead_type, signal, evidence
-3. Load `skills/protocol-memory/SKILL.md` → check `memory/protocols/{slug}/`
-4. Route based on lead_type:
-   - `UI/Pain Lead` → start with `skills/product-assessor/SKILL.md` + `skills/ux-audit/SKILL.md`
-   - `Treasury Whale - Stale Product` → start with `skills/product-assessor/SKILL.md` + `skills/ceo-advisor/SKILL.md`
-   - `Pre-Launch L3/AppChain` → start with `skills/arch-advisor/SKILL.md` + `skills/ceo-advisor/SKILL.md`
-   - `Immediate Dev Need` → start with `skills/web3-audit/SKILL.md`
-   - `TVL Sweet Spot` / `Grant Recipient` → run full `skills/protocol-diligence/SKILL.md`
-5. Write report to `audit-output/{slug}-diligence-{YYYYMMDD}.md`
-6. Write handoff to `web3-sales-agent/data/research-handoffs/{slug}.md`
-7. Mark lead as researched: update `pipeline.md` `- [ ]` → `- [x]`
+1. Run in terminal: `python scripts/phase_runner.py {slug}`
+   - The script is a Manager/Worker orchestrator — it spawns 3 isolated `claude --print` subprocesses,
+     one per phase. Each subprocess terminates completely before the next starts.
+   - Phase 1 → Product Assessment → writes `memory/protocols/{slug}/phase1_handoff.json`
+   - Phase 2 → Smart Contract Audit → writes `memory/protocols/{slug}/phase2_handoff.json`
+   - Phase 3 → Report Assembly → writes `audit-output/{slug}-diligence-{date}.md` + handoff
+2. After script exits 0, confirm `web3-sales-agent/data/research-handoffs/{slug}.md` exists
+3. Call `export_pipeline_md` (rabbit-pipeline MCP) to sync `pipeline.md`
+4. Print: "Research complete — {slug} is ready for /web3-rabbit pitch {slug}"
+
+Error recovery:
+- "No lead found in DB" → run `/web3-rabbit scan` first
+- "claude CLI not found" → ensure Claude Code is installed and `claude --version` works in terminal
+- Phase timeout → retry with `python scripts/phase_runner.py {slug} --resume-from {N} --timeout 900`
+- Partial failure at phase N → retry with `python scripts/phase_runner.py {slug} --resume-from {N}`
+  (phase handoffs are cached to `memory/protocols/{slug}/phaseN_handoff.json` for safe resume)
 
 **`research-all`**
-Run `research {slug}` for every `- [ ]` entry in `pipeline.md`, ordered by:
-1. Signal level (CRITICAL first)
+Call `search_leads` (rabbit-pipeline MCP) with `status: "unresearched"`.
+Run `research {slug}` for each result, ordered by:
+1. Signal level (CRITICAL first — use signal_score field from DB)
 2. Score (if score mode was run — read from score output)
 3. Alphabetical fallback
 
@@ -241,8 +247,12 @@ Web3 Rabbit Status
     portals.yml:       OK ({N} sources, {M} enabled)
     scan.mjs:          OK / ERROR: {message}
     API keys:          Bountycaster: {SET/MISSING} | RootData: {SET/MISSING}
-    pipeline.md:       {N} leads ({M} unresearched)
     scan-history.tsv:  {N} entries, last scan: {date}
+
+  Pipeline DB (rabbit-pipeline MCP):
+    rabbit_pipeline.db: {N} total | {M} unresearched | {K} researched | {J} pitched
+    MCP server:        Call get_pipeline_stats to check DB health
+    pipeline.md:       auto-generated export (read-only)
 
   web3-auditing-agent/
     Slither:           {version or NOT INSTALLED}
@@ -258,6 +268,8 @@ Web3 Rabbit Status
     Drafts pending:    {N} (pitches without Gmail Draft ID)
     Inbox replies:     check with /web3-rabbit inbox
 ```
+
+To check DB state directly: call `get_pipeline_stats` from the `rabbit-pipeline` MCP server.
 
 ---
 
